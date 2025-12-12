@@ -51,7 +51,9 @@ export default function HatProcessor({
   const [resizeStartDistance, setResizeStartDistance] = useState(0)
   const [resizeStartPos, setResizeStartPos] = useState({ x: 0, y: 0 })
   const [rotateStartAngle, setRotateStartAngle] = useState(0)
+  const [showControls, setShowControls] = useState(true)
   const previewContainerRef = useRef<HTMLDivElement>(null)
+  const hatContainerRef = useRef<HTMLDivElement>(null)
 
   // 加载图片
   useEffect(() => {
@@ -176,6 +178,8 @@ export default function HatProcessor({
   const handleDragStart = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault()
+      e.stopPropagation()
+      setShowControls(true)
       const pos = 'touches' in e ? getTouchPos(e) : getMousePos(e)
       setIsDragging(true)
       setDragStart(pos)
@@ -183,6 +187,35 @@ export default function HatProcessor({
     },
     [hatTransform, getMousePos, getTouchPos]
   )
+
+  // 处理容器点击（点击其他位置隐藏边框）
+  const handleContainerClick = useCallback(
+    (e: React.MouseEvent) => {
+      // 如果点击的是圣诞帽容器内部，不隐藏边框
+      if (hatContainerRef.current && hatContainerRef.current.contains(e.target as Node)) {
+        return
+      }
+      setShowControls(false)
+    },
+    []
+  )
+
+  // 处理全局点击（点击组件外的任何位置隐藏边框）
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      // 如果点击的是预览容器内，由 handleContainerClick 处理
+      if (previewContainerRef.current && previewContainerRef.current.contains(e.target as Node)) {
+        return
+      }
+      // 点击容器外的任何位置，隐藏边框
+      setShowControls(false)
+    }
+
+    document.addEventListener('click', handleGlobalClick)
+    return () => {
+      document.removeEventListener('click', handleGlobalClick)
+    }
+  }, [])
 
   // 处理拖拽
   const handleDrag = useCallback(
@@ -376,13 +409,14 @@ export default function HatProcessor({
       <div className="flex justify-center">
         <div
           ref={previewContainerRef}
-          className="relative inline-block"
+          className="relative inline-block cursor-pointer"
           style={{
             width: avatarSize.width,
             height: avatarSize.height,
             maxWidth: '100%',
             maxHeight: '600px',
           }}
+          onClick={handleContainerClick}
         >
           {/* 头像背景 */}
           <img
@@ -399,6 +433,7 @@ export default function HatProcessor({
           {/* 圣诞帽（可交互） */}
           {hatImage && (
             <div
+              ref={hatContainerRef}
               className="absolute"
               style={{
                 left: hatTransform.x - hatWidth / 2,
@@ -407,6 +442,10 @@ export default function HatProcessor({
                 height: hatHeight,
                 transform: `rotate(${hatTransform.rotation}deg)`,
                 transformOrigin: 'center center',
+              }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowControls(true)
               }}
             >
               {/* 圣诞帽图片 */}
@@ -425,16 +464,18 @@ export default function HatProcessor({
               </div>
 
               {/* 边框 */}
-              <div
-                className="absolute inset-0 border-2 border-blue-400 pointer-events-none"
-                style={{
-                  borderStyle: 'dashed',
-                  borderRadius: '2px',
-                }}
-              />
+              {showControls && (
+                <div
+                  className="absolute inset-0 border-2 border-blue-400 pointer-events-none"
+                  style={{
+                    borderStyle: 'dashed',
+                    borderRadius: '2px',
+                  }}
+                />
+              )}
 
               {/* 边框控制点（缩放） */}
-              {resizeHandles.map(({ handle, style }) => (
+              {showControls && resizeHandles.map(({ handle, style }) => (
                 <div
                   key={handle}
                   className="absolute bg-blue-500 border-2 border-white rounded-full shadow-lg hover:bg-blue-600 transition-colors z-10"
@@ -465,6 +506,7 @@ export default function HatProcessor({
               ))}
 
               {/* 旋转控制点（顶部） */}
+              {showControls && (
               <div
                 className="absolute cursor-grab bg-green-500 border-2 border-white rounded-full shadow-lg hover:bg-green-600 transition-colors active:cursor-grabbing z-10"
                 style={{
@@ -497,6 +539,7 @@ export default function HatProcessor({
                   setRotateStartAngle(angle)
                 }}
               />
+              )}
             </div>
           )}
 
