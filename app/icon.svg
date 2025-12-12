@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- 圣诞树 -->
+  <g>
+    <!-- 树干 -->
+    <rect x="45" y="75" width="10" height="15" fill="#8B4513"/>
+    
+    <!-- 树层 -->
+    <path d="M50 10 L20 60 L50 50 L80 60 Z" fill="#228B22"/>
+    <path d="M50 25 L30 65 L50 55 L70 65 Z" fill="#32CD32"/>
+    <path d="M50 40 L35 70 L50 62 L65 70 Z" fill="#228B22"/>
+    
+    <!-- 装饰星星 -->
+    <path d="M50 5 L52 12 L59 12 L53 16 L55 23 L50 18 L45 23 L47 16 L41 12 L48 12 Z" fill="#FFD700"/>
+    
+    <!-- 装饰球 -->
+    <circle cx="40" cy="45" r="3" fill="#FF0000"/>
+    <circle cx="60" cy="50" r="3" fill="#FFD700"/>
+    <circle cx="45" cy="60" r="3" fill="#0000FF"/>
+    <circle cx="55" cy="65" r="3" fill="#FF0000"/>
+  </g>
+</svg>
+
